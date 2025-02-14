@@ -1,0 +1,1 @@
+export const CDN_URL = 'https://img.freepik.com/premium-vector/burger-logo-template_441059-18.jpg'
