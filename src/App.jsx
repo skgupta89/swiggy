@@ -1,4 +1,5 @@
 import './App.css'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import Header from './components/Header'
 import Body from './components/Body'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
@@ -8,6 +9,12 @@ import Cart from './pages/Cart'
 import Layout from './Layout'
 import Error from './pages/Error'
 import RestaurantMenu from './components/RestaurantMenu'
+import Shimmer from './components/Shimmer'
+import UserContextApi from './utils/UserContext'
+import { Provider } from 'react-redux'
+import appStore from './utils/appStore'
+
+const Grocery = lazy(() => import('./components/Grocery'))
 
 const appRouter = createBrowserRouter([
   {
@@ -19,6 +26,14 @@ const appRouter = createBrowserRouter([
         path: '/',
         element:
           <Body />
+
+      },
+      {
+        path: '/grocery',
+        element:
+          <Suspense fallback={<Shimmer />}>
+            <Grocery />
+          </Suspense>
 
       },
       {
@@ -50,7 +65,19 @@ const appRouter = createBrowserRouter([
 ])
 
 function App() {
-  return <RouterProvider router={appRouter} />
+  const [userName, setUserName] = useState('');
+  useEffect(() => {
+    const data = {
+      name: 'sandeep'
+    };
+
+    setUserName(data.name);
+  }, [])
+  return <Provider store={appStore}>
+    <UserContextApi.Provider value={{ loggedInUser: userName, setUserName }}>
+      <RouterProvider router={appRouter} />
+    </UserContextApi.Provider>
+  </Provider>
 }
 
 export default App

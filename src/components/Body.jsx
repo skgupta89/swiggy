@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from 'react'
-import RestaurantCard from './RestaurantCard'
+import React, { useEffect, useState, useContext } from 'react'
+import RestaurantCard, { withTopRatedLabel } from './RestaurantCard'
 import { data } from '../utils/mockData'
 import Shimmer from './Shimmer';
 import { Link } from 'react-router-dom';
 import useOnlineStatus from '../utils/useOnlineStatus';
+import UserContextApi from '../utils/UserContext';
 const Body = () => {
-
   const [dataList, setDataList] = useState([]);
   const [filteredList, setFilteredList] = useState([]);
-
   const [input, setInput] = useState('');
+
+  const {loggedInUser,setUserName} = useContext(UserContextApi)
 
   const handleTopRated = () => {
     const topData = data.filter((item) =>
@@ -41,7 +42,7 @@ const Body = () => {
     const debounce = setTimeout(() => {
       if (input) {
         const trimInput = input.trim().toLowerCase();
-        const filterData = dataList.filter((item) => 
+        const filterData = dataList.filter((item) =>
           item.info.name.toLowerCase().includes(trimInput)
         );
         setFilteredList(filterData);
@@ -49,23 +50,23 @@ const Body = () => {
         setFilteredList(dataList);
       }
     }, 2000);
-  
+
     return () => clearTimeout(debounce);
   }, [input, dataList]);
-  
 
-if(input && filteredList.length === 0) {
-  return <div>
-    <h1>no result found</h1>
-    <button onClick={()=>setInput('')}>clear Search</button>
-     </div>
-}
 
-const onlineStatus = useOnlineStatus();
+  if (input && filteredList.length === 0) {
+    return <div>
+      <h1>no result found</h1>
+      <button onClick={() => setInput('')}>clear Search</button>
+    </div>
+  }
 
-if(onlineStatus === false) {
-return <h1>you are offline please check internet connection</h1>
-}
+  const onlineStatus = useOnlineStatus();
+  const RestaurantCardWithTopLabel = withTopRatedLabel(RestaurantCard)
+  if (onlineStatus === false) {
+    return <h1>you are offline please check internet connection</h1>
+  }
 
   return (
     <div className='body'>
@@ -74,6 +75,13 @@ return <h1>you are offline please check internet connection</h1>
         gap: '10px',
         alignItems: 'center'
       }}>
+        <div className="input">
+          <label>User Name: </label>
+          <input type="text"
+           onChange={(e)=>setUserName(e.target.value)}
+           value={loggedInUser}
+           />
+        </div>
         <div style={{
           display: 'flex',
           gap: '10px',
@@ -100,6 +108,7 @@ return <h1>you are offline please check internet connection</h1>
             border: '1px solid #ccc',
           }} onClick={() => handleReset()}>All Restaurant</button>
         </div>
+
         <div className='searchbar'>
           <input type='text' onChange={(e) => setInput(e.target.value)} placeholder='Enter hotel name' style={{
             padding: '8px',
@@ -122,16 +131,29 @@ return <h1>you are offline please check internet connection</h1>
                 console.log(item)
                 return (
                   <Link to={`/restaurants/${item.info.id}`} >
-                  <RestaurantCard key={item.info.id}
-                    img={item?.info?.cloudinaryImageId}
-                    resName={item.info.name}
-                    cuisines={item.info.cuisines.join(',')}
-                    rating={item.info.avgRating}
-                    time={item.info.sla.slaString}
-                    price={item.info.costForTwo}
-                    
-                    />
-                    </Link>
+                    {
+                      item.info.avgRating > 4.2 ? <RestaurantCardWithTopLabel
+                        key={item.info.id}
+                        img={item?.info?.cloudinaryImageId}
+                        resName={item.info.name}
+                        cuisines={item.info.cuisines.join(',')}
+                        rating={item.info.avgRating}
+                        time={item.info.sla.slaString}
+                        price={item.info.costForTwo}
+
+                      /> :
+                        <RestaurantCard
+                          key={item.info.id}
+                          img={item?.info?.cloudinaryImageId}
+                          resName={item.info.name}
+                          cuisines={item.info.cuisines.join(',')}
+                          rating={item.info.avgRating}
+                          time={item.info.sla.slaString}
+                          price={item.info.costForTwo}
+
+                        />
+                    }
+                  </Link>
                 )
               })
             }

@@ -17,6 +17,17 @@ const RestaurantCard = ({ resName, img, cuisines, rating, time, price }) => {
     )
   }
   
+
+  export const withTopRatedLabel = (Children)=>{
+   return(props)=>{
+    return(
+      <div className='higher-order-component'>
+        <label className='absolute bg-black text-white m-2 p-2 rounded-lg'>Top Rated</label>
+        <Children {...props} />
+      </div>
+    )
+   }
+  }
   
 
 export default RestaurantCard

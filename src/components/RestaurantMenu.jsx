@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import useRestaurantMenu from '../utils/useRestaurantMenu';
+import { useDispatch } from 'react-redux';
+import { addItem } from '../store/cartSlice';
 
 const RestaurantMenu = () => {
     const [data, setData] = useState([])
@@ -8,28 +10,34 @@ const RestaurantMenu = () => {
 
     const { resId } = useParams();
     const resInfo = data?.data?.cards[2]?.card?.card?.info;
-    
-    const {resInfomation} = useRestaurantMenu(resId)
-    
-    console.log(resInfomation);
+
+    // const resInfomation = useRestaurantMenu(resId)
+
+    // console.log(resInfomation);
     // console.log(resInfo)
-    console.log(data)
+
 
     const fetcData = async () => {
         const data = await fetch(`https://www.swiggy.com/dapi/menu/pl?page-type=REGULAR_MENU&complete-menu=true&lat=18.61610&lng=73.72860&restaurantId=${resId}&catalog_qa=undefined&submitAction=ENTER`);
 
         let res = await data.json();
-console.log(res,'res')
-        const itemArray = res?.data?.cards[4].groupedCard.cardGroupMap.REGULAR.cards[3].card.card.categories[0].itemCards
-        console.log(itemArray,'cateogry')
+
+        const itemArray = res?.data?.cards[4].groupedCard.cardGroupMap.REGULAR.cards[1].card.card.itemCards.slice(0, 12)
+        console.log(itemArray, 'cateogry')
         setitemList(itemArray);
         setData(res);
     }
     useEffect(() => {
         fetcData()
-    }, [])
+    }, []);
 
-    if(!resInfo){
+    const dispatch = useDispatch();
+
+    const handleAddItem = (item) => {
+        dispatch(addItem(item))
+    }
+
+    if (!resInfo) {
         return <h1>Loading...........</h1>
     }
 
@@ -64,7 +72,7 @@ console.log(res,'res')
 
                                 <div className="right-section">
                                     <img className='res-logo' src={`https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_660/${item?.card?.info?.imageId}`} />
-                                    <button>Add</button>
+                                    <button onClick={() => handleAddItem(item)}>Add</button>
                                 </div>
 
                             </div>
